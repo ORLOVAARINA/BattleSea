@@ -2,6 +2,7 @@ import asyncio
 import aiosqlite
 import datetime
 from os import system
+from units.string_matrix import to_string
 
 import pytz
 
@@ -71,6 +72,14 @@ async def get_top_10():
         users = await cursor.fetchall()
         return users
 
+async def create_new_room_bot(room_type, user_id, field, m_id, name, bot_field):
+    async with aiosqlite.connect(path) as db:
+        cursor = await db.cursor()
+        await cursor.execute(f"INSERT INTO rooms_bot (user_id_1, field_1, m_id_1, name_1, field_bot) VALUES ({user_id}, '{field}', {m_id}, '{name}', '{to_string(bot_field)}')")
+        await db.commit()
+        await cursor.execute(f"SELECT * FROM rooms_bot WHERE user_id_1 = {user_id}") #select from rooms_bot
+        room = await cursor.fetchone()
+        return room[0]
 
 async def get_all_reg_date():
     async with aiosqlite.connect(path) as db:

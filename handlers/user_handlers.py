@@ -128,8 +128,17 @@ async def top(message: Message, command: CommandObject, state: FSMContext):
 
 @router.callback_query(F.data.startswith("play_with_bot"))
 async def play_with_bot(call: CallbackQuery, state: FSMContext):
-    await call.answer("Данная функция пока не доступна", show_alert=True)
+    await call.answer()
+    str_field = fields[randint(0, len(fields) - 1)]
+    field = to_matrix(str_field)
+    await state.update_data(field=field, bot_field=create_bot_field())
+    img_field = await draw_field(field)
+    img = BufferedInputFile(img_field, filename="img.png")
+    await call.message.answer_photo(photo=img, caption="Ваша расстановка:",
+                                    reply_markup=await set_field_keyboard("bot"))
 
+def create_bot_field():
+    return to_matrix(fields[randint(0,len(fields)-1)])
 
 @router.callback_query(F.data.startswith("play_with_player"))
 async def play_with_player(call: CallbackQuery):
@@ -210,6 +219,7 @@ async def random_field(call: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data.startswith("start_game"))
 async def start_game(call: CallbackQuery, state: FSMContext):
+  try:
     if not await get_user_in_room(call.message.chat.id):
         info = call.data.split(":")
         room_type = info[1]
@@ -222,6 +232,11 @@ async def start_game(call: CallbackQuery, state: FSMContext):
                                             call.message.chat.first_name)
             await call.message.edit_caption(caption="Комната создана\n\nОжидаем соперника",
                                             reply_markup=await settings_room_keyboard(room_id, call.message.chat.id))
+        elif room_type == "bot":  # added bot logic
+            room_id = await create_new_room_bot(room_type, call.message.chat.id, to_string(field), m_id,
+                                                call.message.chat.first_name, data['bot_field'])
+            await call.message.edit_caption(caption=f"Игра против бота началась!\nВаш ход:",
+                                            reply_markup=await field_keyboard(data['bot_field']))
         elif room_type == "connect":
             room_id = data['room_id']
             room = await get_room(room_id)
@@ -238,6 +253,10 @@ async def start_game(call: CallbackQuery, state: FSMContext):
     else:
         await call.answer("Вы уже находитесь в комнате", show_alert=True)
 
+  except KeyError as e:
+      await call.answer(f"Ошибка: {e}", show_alert=True)  # Handle missing keys
+
+
 
 @router.callback_query(F.data.startswith("fire"))
 async def fire(call: CallbackQuery):
@@ -245,6 +264,23 @@ async def fire(call: CallbackQuery):
     x = int(info[1])
     y = int(info[2])
     status = info[3]
+    if status == "bot":
+        game = await get_room_bot_by_user_id(call.message.chat.id)
+        if game:
+            bot_field = to_matrix(game[5])
+            player_field = to_matrix(game[2])
+            x, y = choice(get_available_moves(bot_field))
+            if player_field[x][y] == "0":
+              player_field[x][y] = "7"
+            else:
+              player_field[x][y] = "5"
+
+            await update_player_field(game[0], to_string(player_field))
+            img_field = await draw_field(player_field)
+            img = BufferedInputFile(img_field, filename="img.png")
+
+            await call.message.edit_media(media=InputMediaPhoto(media=img), reply_markup=await field_keyboard(game[5]))
+            await call.message.edit_caption(caption=f"Ход бота.\nВаш ход:") # inform that it was bot's turn
     if status == "yes":
         game = await get_room_by_user_id(call.message.chat.id)
         if game:
@@ -366,7 +402,26 @@ async def fire(call: CallbackQuery):
     else:
         await call.answer("Данная клетка уже открыта", show_alert=True)
 
+async def get_room_bot_by_user_id(user_id):
+    async with aiosqlite.connect(path) as db:
+        cursor = await db.cursor()
+        await cursor.execute(f"SELECT * FROM rooms_bot WHERE user_id_1 = {user_id}")
+        room = await cursor.fetchone()
+        return room
+async def update_player_field(room_id, field):
+    async with aiosqlite.connect(path) as db:
+        cursor = await db.cursor()
+        await cursor.execute(f"UPDATE rooms_bot SET field_1 = '{field}' WHERE id = {room_id}")
+        await db.commit()
 
+def get_available_moves(field):
+    """Returns a list of available (unshot) coordinates."""
+    moves = []
+    for i in range(6):
+        for j in range(6):
+            if field[i][j] == '0':
+                moves.append((i, j))
+    return moves
 @router.callback_query(F.data == "stop_game")
 async def stop_game(call: CallbackQuery):
     room = await get_room_by_user_id(call.message.chat.id)
@@ -439,7 +494,6 @@ class MyHandler(ErrorHandler):
 @router.error()
 class MyHandler(ErrorHandler):
     async def handle(self):
-        # Когда писал это, то квас, к сожалению, закончился
         print(self.exception_name)
         print(self.exception_message[self.exception_message.find("exception="):])
         config.logger.error(
