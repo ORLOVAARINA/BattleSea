@@ -88,11 +88,6 @@ async def get_all_reg_date():
         dates = await cursor.fetchall()
         return dates
 
-async def add_user_to_room(room_id, user_id):
-    async with aiosqlite.connect(path) as db:
-        cursor = await db.cursor()
-        await cursor.execute("INSERT INTO user_rooms (user_id, room_id) VALUES (?, ?)", (user_id, room_id))
-        await db.commit()
 
 async def remove_user_from_room(user_id):
     async with aiosqlite.connect(path) as db:
