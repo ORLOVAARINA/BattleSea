@@ -230,46 +230,34 @@ async def start_game(call: CallbackQuery, state: FSMContext):
             await state.clear()
             m_id = call.message.message_id
             room_id = None
+            name = call.message.chat.first_name  # Определение name здесь
 
             if room_type == "public" or room_type == "private":
-                room_id = await db.create_new_room(room_type, call.message.chat.id, to_string(field), m_id,
-                                                    call.message.chat.first_name)
-                data = await state.get_data()
-                field = data['field']
-                m_id = call.message.message_id
-                name = call.message.chat.first_name
-                await db.add_user_to_room(room_id, call.message.chat.id,to_string(field), m_id, name) # Добавление пользователя в комнату
+                room_id = await db.create_new_room(room_type, call.message.chat.id, to_string(field), m_id, name)
+                await db.add_user_to_room(room_id, call.message.chat.id)
                 await call.message.edit_caption(caption="Комната создана\n\nОжидаем соперника",
                                                 reply_markup=await settings_room_keyboard(room_id, call.message.chat.id))
 
-            elif room_type == "bot":  # Логика игры с ботом
+            elif room_type == "bot":
                 bot_field = data['bot_field']
-                room_id = await db.create_new_room_bot(room_type, call.message.chat.id, to_string(field), m_id,
-                                                        call.message.chat.first_name, bot_field)
-                await db.add_user_to_room(room_id, call.message.chat.id,to_string(field), m_id, name) # Добавление пользователя в комнату
+                room_id = await db.create_new_room_bot(room_type, call.message.chat.id, to_string(field), m_id, name, bot_field)
+                await db.add_user_to_room(room_id, call.message.chat.id)
                 await call.message.edit_caption(caption=f"Игра против бота началась!\nВаш ход:",
                                                 reply_markup=await field_keyboard(bot_field))
 
             elif room_type == "connect":
                 room_id = data['room_id']
                 room = await db.get_room(room_id)
-                if room and (room[2] == 0 or room[2] == 1): # Проверка на существование комнаты и наличие свободного места
-                    data = await state.get_data()
-                    field = data['field']
-                    m_id = call.message.message_id
-                    name = call.message.chat.first_name
-                    await db.add_user_to_room(room_id, call.message.chat.id,to_string(field), m_id, name) # Добавление пользователя в комнату
-                    await add_user_to_room(room_id, call.message.chat.id, to_string(field), m_id,
-                                           call.message.chat.first_name)
+                if room and (room[2] == 0 or room[2] == 1):
+                    await db.add_user_to_room(room_id, call.message.chat.id, to_string(field), m_id, name)
                     await call.message.edit_caption(caption=f"Противник: {room[9]}\n\nОжидаем ход соперника",
                                                     reply_markup=await field_keyboard(room[5]))
                     await call.bot.edit_message_caption(chat_id=room[1], message_id=room[3],
-                                                        caption=f"Противник: {call.message.chat.first_name}\n\nВаш ход:",
+                                                        caption=f"Противник: {name}\n\nВаш ход:",
                                                         reply_markup=await field_keyboard(field))
                 else:
                     await call.answer("Комната уже заполнена или не существует", show_alert=True)
 
-            #  В случае успешного создания/подключения к комнате:
             if room_id:
                 await call.answer("Игра началась!", show_alert=False)
 
