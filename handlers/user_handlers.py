@@ -13,6 +13,8 @@ from units.string_matrix import to_string, to_matrix
 from units.number_player import get_number_player
 from units.check_field import check_field
 from fields import fields
+from config_data.config import config
+
 
 router = Router()
 @router.message(Command("start"))

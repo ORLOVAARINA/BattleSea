@@ -14,8 +14,6 @@ class IsAdmin(BaseFilter):
             return False
 
 
-
-
 def register_all_routers(dp: Dispatcher):
     admin_handlers.router.message.filter(F.chat.type == "private", IsAdmin())
     user_handlers.router.message.filter(F.chat.type == "private")
