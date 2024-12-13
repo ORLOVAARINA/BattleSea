@@ -5,8 +5,7 @@ from filters import register_all_routers
 import asyncio
 
 import test as test
-import config_data.config as config
-
+import config_data.config as conf
 
 async def main():
     await check_db()

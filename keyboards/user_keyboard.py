@@ -97,7 +97,7 @@ async def set_field_keyboard(room_status):
 async def settings_room_keyboard(room_id, user_id):
     buttons = [
         [
-            types.InlineKeyboardButton(text="📣 Отправить приглашение", url=f"https://telegram.me/share/url?url=Привет! Я создал комнату в игре {config.bot_name}. Присоединяйся!\n\nt.me/{config.bot_username}?start={room_id}_{user_id}")
+            types.InlineKeyboardButton(text="📣 Отправить приглашение", url=f"https://telegram.me/share/url?url=Привет!%20Я%20создал%20комнату%20в%20игре {config.bot_name}. Присоединяйся!\n\nt.me/{config.bot_username}?start={room_id}_{user_id}")
         ],
         [
             types.InlineKeyboardButton(text="❌ Отменить", callback_data="cancel_room")

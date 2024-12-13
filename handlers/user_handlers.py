@@ -7,7 +7,7 @@ import datetime
 from random import randint
 
 from keyboards.user_keyboard import *
-from database.db import *
+import database.db as db
 from units.drawer import draw_field
 from units.string_matrix import to_string, to_matrix
 from units.number_player import get_number_player
@@ -219,42 +219,66 @@ async def random_field(call: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data.startswith("start_game"))
 async def start_game(call: CallbackQuery, state: FSMContext):
-  try:
-    if not await get_user_in_room(call.message.chat.id):
-        info = call.data.split(":")
-        room_type = info[1]
-        data = await state.get_data()
-        field = data['field']
-        await state.clear()
-        m_id = call.message.message_id
-        if room_type == "public" or room_type == "private":
-            room_id = await create_new_room(room_type, call.message.chat.id, to_string(field), m_id,
-                                            call.message.chat.first_name)
-            await call.message.edit_caption(caption="Комната создана\n\nОжидаем соперника",
-                                            reply_markup=await settings_room_keyboard(room_id, call.message.chat.id))
-        elif room_type == "bot":  # added bot logic
-            room_id = await create_new_room_bot(room_type, call.message.chat.id, to_string(field), m_id,
-                                                call.message.chat.first_name, data['bot_field'])
-            await call.message.edit_caption(caption=f"Игра против бота началась!\nВаш ход:",
-                                            reply_markup=await field_keyboard(data['bot_field']))
-        elif room_type == "connect":
-            room_id = data['room_id']
-            room = await get_room(room_id)
-            if room[2] == 0 or room[2] == 1:
-                await add_user_to_room(room_id, call.message.chat.id, to_string(field), m_id,
-                                       call.message.chat.first_name)
-                await call.message.edit_caption(caption=f"Противник: {room[9]}\n\nОжидаем ход соперника",
-                                                reply_markup=await field_keyboard(room[5]))
-                await call.bot.edit_message_caption(chat_id=room[1], message_id=room[3],
-                                                    caption=f"Противник: {call.message.chat.first_name}\n\nВаш ход:",
-                                                    reply_markup=await field_keyboard(field))
-            else:
-                await call.answer("Комната уже заполнена", show_alert=True)
-    else:
-        await call.answer("Вы уже находитесь в комнате", show_alert=True)
+    try:
+        if not await db.is_user_in_any_room(call.message.chat.id):
+            info = call.data.split(":")
+            room_type = info[1]
+            data = await state.get_data()
+            field = data['field']
+            await state.clear()
+            m_id = call.message.message_id
+            room_id = None
 
-  except KeyError as e:
-      await call.answer(f"Ошибка: {e}", show_alert=True)  # Handle missing keys
+            if room_type == "public" or room_type == "private":
+                room_id = await db.create_new_room(room_type, call.message.chat.id, to_string(field), m_id,
+                                                    call.message.chat.first_name)
+                data = await state.get_data()
+                field = data['field']
+                m_id = call.message.message_id
+                name = call.message.chat.first_name
+                await db.add_user_to_room(room_id, call.message.chat.id,to_string(field), m_id, name) # Добавление пользователя в комнату
+                await call.message.edit_caption(caption="Комната создана\n\nОжидаем соперника",
+                                                reply_markup=await settings_room_keyboard(room_id, call.message.chat.id))
+
+            elif room_type == "bot":  # Логика игры с ботом
+                bot_field = data['bot_field']
+                room_id = await db.create_new_room_bot(room_type, call.message.chat.id, to_string(field), m_id,
+                                                        call.message.chat.first_name, bot_field)
+                await db.add_user_to_room(room_id, call.message.chat.id,to_string(field), m_id, name) # Добавление пользователя в комнату
+                await call.message.edit_caption(caption=f"Игра против бота началась!\nВаш ход:",
+                                                reply_markup=await field_keyboard(bot_field))
+
+            elif room_type == "connect":
+                room_id = data['room_id']
+                room = await db.get_room(room_id)
+                if room and (room[2] == 0 or room[2] == 1): # Проверка на существование комнаты и наличие свободного места
+                    data = await state.get_data()
+                    field = data['field']
+                    m_id = call.message.message_id
+                    name = call.message.chat.first_name
+                    await db.add_user_to_room(room_id, call.message.chat.id,to_string(field), m_id, name) # Добавление пользователя в комнату
+                    await add_user_to_room(room_id, call.message.chat.id, to_string(field), m_id,
+                                           call.message.chat.first_name)
+                    await call.message.edit_caption(caption=f"Противник: {room[9]}\n\nОжидаем ход соперника",
+                                                    reply_markup=await field_keyboard(room[5]))
+                    await call.bot.edit_message_caption(chat_id=room[1], message_id=room[3],
+                                                        caption=f"Противник: {call.message.chat.first_name}\n\nВаш ход:",
+                                                        reply_markup=await field_keyboard(field))
+                else:
+                    await call.answer("Комната уже заполнена или не существует", show_alert=True)
+
+            #  В случае успешного создания/подключения к комнате:
+            if room_id:
+                await call.answer("Игра началась!", show_alert=False)
+
+        else:
+            await call.answer("Вы уже находитесь в комнате", show_alert=True)
+
+    except KeyError as e:
+        await call.answer(f"Ошибка: Недостающие данные в state: {e}", show_alert=True)
+    except Exception as e:
+        await call.answer(f"Произошла ошибка: {e}", show_alert=True)
+        config.logger.exception(f"Ошибка в коллбеке start_game: {e}")
 
 
 
@@ -280,7 +304,7 @@ async def fire(call: CallbackQuery):
             img = BufferedInputFile(img_field, filename="img.png")
 
             await call.message.edit_media(media=InputMediaPhoto(media=img), reply_markup=await field_keyboard(game[5]))
-            await call.message.edit_caption(caption=f"Ход бота.\nВаш ход:") # inform that it was bot's turn
+            await call.message.edit_caption(caption=f"Ход бота.\nВаш ход:")
     if status == "yes":
         game = await get_room_by_user_id(call.message.chat.id)
         if game:
@@ -415,7 +439,6 @@ async def update_player_field(room_id, field):
         await db.commit()
 
 def get_available_moves(field):
-    """Returns a list of available (unshot) coordinates."""
     moves = []
     for i in range(6):
         for j in range(6):
@@ -465,9 +488,10 @@ async def give_up(call: CallbackQuery):
 
 @router.callback_query(F.data == "cancel_room")
 async def cancel_room(call: CallbackQuery):
-    room = await get_room_by_user_id(call.message.chat.id)
-    if room:
-        await delete_room(room[0])
+    room_id = await db.get_user_room(call.message.chat.id)
+    if room_id:
+        await db.delete_room(room_id)  # Удаление комнаты
+        await db.remove_user_from_room(call.message.chat.id) # Удаление пользователя из таблицы комнат
         try:
             await call.message.delete()
         except:

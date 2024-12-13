@@ -23,7 +23,7 @@ async def check_db():
         print(f"-----   {_datetime}   -----")
 
 
-def get_now_date():
+async def get_now_date():
     dt = datetime.datetime.now()
     tz = pytz.timezone("Europe/Kiev")
     mess_date = tz.normalize(dt.astimezone(tz))
@@ -31,7 +31,7 @@ def get_now_date():
     return format_date
 
 
-def get_now_time():
+async def get_now_time():
     dt = datetime.datetime.now()
     tz = pytz.timezone("Europe/Kiev")
     mess_date = tz.normalize(dt.astimezone(tz))
@@ -88,7 +88,31 @@ async def get_all_reg_date():
         dates = await cursor.fetchall()
         return dates
 
+async def add_user_to_room(room_id, user_id):
+    async with aiosqlite.connect(path) as db:
+        cursor = await db.cursor()
+        await cursor.execute("INSERT INTO user_rooms (user_id, room_id) VALUES (?, ?)", (user_id, room_id))
+        await db.commit()
 
+async def remove_user_from_room(user_id):
+    async with aiosqlite.connect(path) as db:
+        cursor = await db.cursor()
+        await cursor.execute("DELETE FROM user_rooms WHERE user_id = ?", (user_id,))
+        await db.commit()
+
+async def get_user_room(user_id):
+    async with aiosqlite.connect(path) as db:
+        cursor = await db.cursor()
+        await cursor.execute("SELECT room_id FROM user_rooms WHERE user_id = ?", (user_id,))
+        room = await cursor.fetchone()
+        return room[0] if room else None  # Возвращает room_id или None
+
+async def is_user_in_any_room(user_id):
+    async with aiosqlite.connect(path) as db:
+        cursor = await db.cursor()
+        await cursor.execute("SELECT 1 FROM user_rooms WHERE user_id = ?", (user_id,))
+        result = await cursor.fetchone()
+        return result is not None
 async def get_all_users_id():
     async with aiosqlite.connect(path) as db:
         cursor = await db.cursor()
