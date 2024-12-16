@@ -8,7 +8,7 @@ import config_data.config as config
 # Определяем главную асинхронную функцию main
 async def main():
     await check_db()
-    bot = Bot(token=token)
+    bot = Bot(token=token_id)
     bot_info = await bot.get_me()
     await config.update_data(bot_info)
     dp = Dispatcher()

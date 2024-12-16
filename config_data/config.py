@@ -11,10 +11,10 @@ logger.setLevel(logging.DEBUG)
 load_dotenv()
 
 # Получение значений из переменных окружения. Обработка отсутствующих значений.
-token = os.getenv('token')
+token_id = os.getenv('token')
 admin_ids_str = os.getenv('admin_id')
 
-if not token:
+if not token_id:
     logger.critical("token не найден в .env файле!")
     exit(1)
 
