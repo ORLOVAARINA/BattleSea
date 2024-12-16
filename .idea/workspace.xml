@@ -4,7 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fec44d4e-ddfc-409a-9cbf-63c934dd85c8" name="Changes" comment="" />
+    <list default="true" id="fec44d4e-ddfc-409a-9cbf-63c934dd85c8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config_data/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config_data/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/database.db" beforeDir="false" afterPath="$PROJECT_DIR$/database/database.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/db.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/filters/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/routers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handlers/admin_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/admin_handlers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handlers/user_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/user_handlers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboards/admin_keyboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards/admin_keyboard.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboards/user_keyboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards/user_keyboard.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/units/check_field.py" beforeDir="false" afterPath="$PROJECT_DIR$/units/check_field.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/units/drawer.py" beforeDir="false" afterPath="$PROJECT_DIR$/units/drawer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/units/number_player.py" beforeDir="false" afterPath="$PROJECT_DIR$/units/number_player.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/units/string_matrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/units/string_matrix.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -23,6 +41,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Python.battleship_bot_full (8).executor&quot;: &quot;Run&quot;,
     &quot;Python.bot.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,

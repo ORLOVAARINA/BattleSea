@@ -1,6 +1,7 @@
 from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
 
 
+#Клавиатура admin панели
 def admin_keyboard():
     buttons = [
         [
@@ -16,7 +17,7 @@ def admin_keyboard():
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
-
+#Клавиатура рассылки
 def mailing_keyboard():
     buttons = [
         [
@@ -30,7 +31,7 @@ def mailing_keyboard():
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
-
+#Клавиатура подтверждения рассылки
 def ask_mailing_keyboard():
     buttons = [
         [
@@ -43,7 +44,7 @@ def ask_mailing_keyboard():
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
-
+#Кнопка отмены
 def admin_cancel_keyboard():
     buttons = [
         [

@@ -1,12 +1,11 @@
-from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
+from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram import types
 from units.string_matrix import to_matrix
-
 from database.db import *
-from config_data.config import bot_data
+import config_data.config as config
 
-
+#Основная клавиатура
 async def main_keyboard():
     builder = ReplyKeyboardBuilder()
     builder.row(
@@ -14,11 +13,12 @@ async def main_keyboard():
     )
     builder.row(
         types.KeyboardButton(text="👤 Профиль"),
-        types.KeyboardButton(text="🏆 Топ")
+        types.KeyboardButton(text="🏆 Топ"),
+        types.KeyboardButton(text="🧠 Идея"),
     )
     return builder.as_markup(resize_keyboard=True)
 
-
+#Клавиатура выбора режима игры
 async def game_mode_keyboard():
     buttons = [
         [
@@ -31,7 +31,7 @@ async def game_mode_keyboard():
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
-
+# Клавиатуры списка комнат
 async def get_rooms_keyboard(page):
     rooms = await get_all_rooms()
     buttons = []
@@ -67,7 +67,7 @@ async def get_rooms_keyboard(page):
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
-
+#Клавиатура выбора типа комнаты
 async def room_type_keyboard():
     buttons = [
         [
@@ -80,7 +80,7 @@ async def room_type_keyboard():
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
-
+#Клавиатура растановки поля
 async def set_field_keyboard(room_status):
     buttons = [
         [
@@ -93,11 +93,11 @@ async def set_field_keyboard(room_status):
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
-
+#Клавиатура настройки комнаты
 async def settings_room_keyboard(room_id, user_id):
     buttons = [
         [
-            types.InlineKeyboardButton(text="📣 Отправить приглашение", url=f"https://telegram.me/share/url?url=Привет! Я создал комнату в игре {bot_data.bot_name}. Присоединяйся!\n\nt.me/?start={room_id}_{user_id}")
+            types.InlineKeyboardButton(text="📣 Отправить приглашение", url=f"https://telegram.me/share/url?url=Привет!\nЯ\nсоздал\nкомнату\nв\nигре\n{config.bot_name}. Присоединяйся!\nt.me/{config.bot_username}?start={room_id}_{user_id}")
         ],
         [
             types.InlineKeyboardButton(text="❌ Отменить", callback_data="cancel_room")
@@ -106,7 +106,7 @@ async def settings_room_keyboard(room_id, user_id):
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
-
+#Клавиатура игрового поля
 async def field_keyboard(str_field):
     field = to_matrix(str_field)
     all_buttons = []
@@ -127,7 +127,7 @@ async def field_keyboard(str_field):
     keyboard = InlineKeyboardMarkup(inline_keyboard=all_buttons)
     return keyboard
 
-
+#Закрытие сообщения
 async def close_keyboard():
     buttons = [
         [

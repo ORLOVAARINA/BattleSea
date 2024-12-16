@@ -1,24 +1,24 @@
 from aiogram import Router, F
-from aiogram.filters import Command
+from aiogram.filters import  Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.state import State, StatesGroup
 from keyboards.admin_keyboard import *
-import datetime
 import asyncio
-
 
 from config_data.config import *
 import config_data.config as config
+import database.db as db
+from database.db import *
 
-router = Router()
+router = Router()# Создаем роутер для обработки запросов
 
-
+# Создаем класс для состояний FSM в админ-панели
 class AdminState(StatesGroup):
     set_message = State()
     set_count = State()
 
-
+# Обработчик команды /admin
 @router.message(Command("admin"))
 async def admin(message: Message):
     await message.answer("Вы вошли в админ панель", reply_markup=admin_keyboard())
@@ -27,7 +27,7 @@ async def admin(message: Message):
     except:
         pass
 
-
+# Обработчик callback-запроса со статистикой
 @router.callback_query(F.data.startswith("statistic"))
 async def statistic(call: CallbackQuery):
     await call.answer()
@@ -58,13 +58,14 @@ async def statistic(call: CallbackQuery):
     text = f"📊 <b>Статистика бота @{config.bot_username}</b>\n\n<b> └ Сегодня:</b> <i>{today}</i>\n<b> └ Вчера:</b> <i>{yesterday}</i>\n<b> └ С начала недели:</b> <i>{weak}</i>\n<b> └ С начала месяца:</b> <i>{month}</i>\n<b> └ За всё время:</b> <i>{all_time}</i>\n"
     await call.message.answer(text, parse_mode="HTML")
 
+# Обработчик callback-запроса на начало рассылки
 @router.callback_query(F.data.startswith("send_mailing"))
 async def send_mailing(call: CallbackQuery, state: FSMContext):
     await call.answer()
     await call.message.answer("Введите текст или фото рассылки", reply_markup=admin_cancel_keyboard())
     await state.set_state(AdminState.set_message)
 
-
+# Обработчик сообщений в состоянии AdminState.set_message
 @router.message(AdminState.set_message)
 async def set_message(message: Message, state: FSMContext):
     if message.photo:
@@ -79,14 +80,14 @@ async def set_message(message: Message, state: FSMContext):
         await message.answer(text, reply_markup=mailing_keyboard())
         await state.update_data(message=message.text, type="text")
 
-
+# Обработчик callback-запроса на ввод количества пользователей для рассылки
 @router.callback_query(F.data.startswith("count_send_mailing"))
 async def count_send_mailing(call: CallbackQuery, state: FSMContext):
     await call.answer()
     await call.message.answer("Введите количество пользователей для рассылки\n\nЕсли хотите отправить всем, то введите <code>0</code>", parse_mode="HTML", reply_markup=admin_cancel_keyboard())
     await state.set_state(AdminState.set_count)
 
-
+# Обработчик сообщений в состоянии AdminState.set_count
 @router.message(AdminState.set_count, F.text)
 async def set_count(message: Message, state: FSMContext):
     count = message.text
@@ -102,7 +103,7 @@ async def set_count(message: Message, state: FSMContext):
     else:
         await message.answer("Вы ввели некорректное число")
 
-
+# Обработчик callback-запроса на начало рассылки
 @router.callback_query(F.data.startswith("start_send_mailing"))
 async def start_send_mailing(call: CallbackQuery, state: FSMContext):
     await call.answer()
@@ -131,7 +132,7 @@ async def start_send_mailing(call: CallbackQuery, state: FSMContext):
             break
     await call.message.answer(f"Рассылка закончилась\n\n<b>Успешно:</b> {success}\n<b>Не успешно:</b> {failed}", parse_mode="HTML")
 
-
+# Обработчик callback-запроса на отмену
 @router.callback_query(F.data.startswith("cancel"))
 async def cancel(call: CallbackQuery, state: FSMContext):
     await call.answer()
@@ -140,5 +141,3 @@ async def cancel(call: CallbackQuery, state: FSMContext):
         await call.message.delete()
     except:
         pass
-
-

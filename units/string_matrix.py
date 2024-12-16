@@ -1,3 +1,4 @@
+#Преобразование  матрицы (двумерного списка) в строку
 def to_string(matrix):
     if type(matrix) is str:
         return matrix
@@ -6,7 +7,7 @@ def to_string(matrix):
         result += "".join(str(x) for x in row)
     return result
 
-
+#Преобразование  строки  в матрицу (двумерный список)
 def to_matrix(string):
     if type(string) is list:
         return string

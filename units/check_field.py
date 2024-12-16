@@ -1,3 +1,4 @@
+#Проверка, содержит ли поле (представленное двумерным списком (fields)) значения 1, 2, 3 или 4.
 def check_field(field):
     for row in field:
         for element in row:
