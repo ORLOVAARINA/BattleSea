@@ -55,7 +55,7 @@ async def statistic(call: CallbackQuery):
         if datetime.datetime.strptime(date[0], "%d.%m.%Y") >= start_of_month:
             month += 1
         all_time += 1
-    text = f"📊 <b>Статистика бота @{config.bot_username}</b>\n\n<b> └ Сегодня:</b> <i>{today}</i>\n<b> └ Вчера:</b> <i>{yesterday}</i>\n<b> └ С начала недели:</b> <i>{weak}</i>\n<b> └ С начала месяца:</b> <i>{month}</i>\n<b> └ За всё время:</b> <i>{all_time}</i>\n"
+    text = f"📊 <b>Статистика бота @{config.bot_data.bot_username}</b>\n\n<b> └ Сегодня:</b> <i>{today}</i>\n<b> └ Вчера:</b> <i>{yesterday}</i>\n<b> └ С начала недели:</b> <i>{weak}</i>\n<b> └ С начала месяца:</b> <i>{month}</i>\n<b> └ За всё время:</b> <i>{all_time}</i>\n"
     await call.message.answer(text, parse_mode="HTML")
 
 # Обработчик callback-запроса на начало рассылки
