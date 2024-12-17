@@ -38,4 +38,3 @@ async def update_data(user: User):
     bot_data.bot_username = user.username  # Обновляем данные через экземпляр класса
     bot_data.bot_name = user.first_name
     logger.info(f"Данные бота обновлены: @{bot_data.bot_username}, {bot_data.bot_name}") # Логируем обновление данных.
-

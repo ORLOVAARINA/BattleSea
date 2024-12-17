@@ -470,4 +470,3 @@ class MyHandler(ErrorHandler):
         print(self.exception_name)
         print(self.exception_message[self.exception_message.find("exception="):])
         config.logger.error(self.exception_name + " | " + self.exception_message[self.exception_message.find("exception="):])
-

@@ -1,7 +1,9 @@
+import asyncio
 import aiosqlite
 import datetime
-import pytz
 from os import system
+
+import pytz
 
 
 path = "database/database.db"# Определяем путь к файлу базы данных
@@ -26,6 +28,13 @@ def get_now_date():
     tz = pytz.timezone("Europe/Moscow")
     mess_date = tz.normalize(dt.astimezone(tz))
     format_date = mess_date.strftime("%d.%m.%Y")
+    return format_date
+
+def get_now_time():
+    dt = datetime.datetime.now()
+    tz = pytz.timezone("Europe/Moscow")
+    mess_date = tz.normalize(dt.astimezone(tz))
+    format_date = mess_date.strftime("%d.%m.%Y %H:%M")
     return format_date
 
 # Асинхронная функция для проверки, существует ли пользователь с заданным ID в базе данных

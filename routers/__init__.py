@@ -1,7 +1,6 @@
 from aiogram import Dispatcher,F
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
-from handlers import user_handlers, admin_handlers
 from config_data.config import admin_id
 
 # Создаем класс фильтра для проверки прав администратора
@@ -11,11 +10,3 @@ class IsAdmin(BaseFilter):
             return True
         else:
             return False
-
-# Функция для регистрации всех роутеров
-def register_all_routers(dp: Dispatcher):
-    admin_handlers.router.message.filter(F.chat.type == "private", IsAdmin())
-    user_handlers.router.message.filter(F.chat.type == "private")
-    dp.include_router(admin_handlers.router)  # Админ роутер
-    dp.include_router(user_handlers.router)  # Юзер роутер
-

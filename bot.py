@@ -1,21 +1,37 @@
 import asyncio
-from aiogram import Bot, Dispatcher
-from config_data.config import *
+from aiogram import Bot, Dispatcher, F
+from aiogram.exceptions import TelegramAPIError
+from config_data.config import token, logger
 from database.db import check_db
-from routers import register_all_routers
+from handlers import user_handlers, admin_handlers
+from routers import IsAdmin
+
 import config_data.config as config
 
-# Определяем главную асинхронную функцию main
+
 async def main():
     await check_db()
     bot = Bot(token=token)
-    bot_info = await bot.get_me()
-    await config.update_data(bot_info)
-    dp = Dispatcher()
-    register_all_routers(dp)
-    await dp.start_polling(bot)
+    try:
+      bot_info = await bot.get_me()
+      await config.update_data(bot_info)
+      dp = Dispatcher()
 
-# Проверяем, является ли данный файл точкой входа в приложение
+      # Фильтрация роутеров (не импортируется, поэтому используется здесь)
+      admin_handlers.router.message.filter(F.chat.type == "private", IsAdmin())
+      user_handlers.router.message.filter(F.chat.type == "private")
+      dp.include_router(admin_handlers.router)  # Админ роутер
+      dp.include_router(user_handlers.router)  # Юзер роутер
+
+
+      await dp.start_polling(bot)
+    except TelegramAPIError as e:
+        logger.error(f"Telegram API error: {e}")
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}")
+    finally:
+         await bot.session.close()
+
 if __name__ == '__main__':
     try:
         logger.info("Bot started")
@@ -23,4 +39,3 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         logger.info("Bot stopped")
         print('Exit')
-
