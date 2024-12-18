@@ -1,40 +1,26 @@
-import logging
-import os
-from dotenv import load_dotenv
+import configparser
 from aiogram.types import User
+import logging
 
-# Настройка логирования
-logger = logging.getLogger(__name__)  # Используем __name__ для более информативного имени логера
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler('logs.txt')
+handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger.addHandler(handler)
 
-# Загрузка переменных окружения из файла .env
-load_dotenv()
+config = configparser.ConfigParser()
+config.read('.env', encoding='utf-8')
+data = config["settings"]
+token = data["token"]
+admin_id = list(map(int, data["admin_id"].split(",")))
+bot_username = str
+bot_name = str
 
-# Получение значений из переменных окружения. Обработка отсутствующих значений.
-token = os.getenv('BOT_TOKEN')
-admin_ids_str = os.getenv('ADMIN_IDS')
 
-
-if not token:
-    logger.critical("BOT_TOKEN не найден в .env файле!")
-    exit(1)
-
-try:
-    admin_id = [int(x) for x in admin_ids_str.split(',')] if admin_ids_str else [] #Обработка случая, если ADMIN_IDS пустой.
-except (AttributeError, ValueError):
-    logger.error("Неверный формат ADMIN_IDS в .env файле!")
-    admin_id = []
-
-# Создаем класс для хранения данных бота
-class BotData:
-    def __init__(self): # Исправлено: используем __init__
-        self.bot_username = None
-        self.bot_name = None
-
-bot_data = BotData()  # Создаем экземпляр класса BotData
-
-# Асинхронная функция для обновления данных бота
 async def update_data(user: User):
-    bot_data.bot_username = user.username  # Обновляем данные через экземпляр класса
-    bot_data.bot_name = user.first_name
-    logger.info(f"Данные бота обновлены: @{bot_data.bot_username}, {bot_data.bot_name}") # Логируем обновление данных.
+    global bot_username
+    global bot_name
+
+    bot_username = user.username
+    bot_name = user.first_name
+    print(f"@{bot_username}", bot_name)

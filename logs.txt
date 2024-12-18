@@ -1,0 +1,4 @@
+2024-12-18 22:28:47,217 - INFO - Bot started
+2024-12-18 22:56:44,623 - INFO - Bot stopped
+2024-12-18 22:57:15,560 - INFO - Bot started
+2024-12-19 01:21:57,773 - INFO - Bot stopped
